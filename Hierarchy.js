@@ -168,6 +168,7 @@ var shoulderAngle = 0.0;
 var armAngle = 0.0;
 var handAngle = 0.0
 var headAngle = 0.0;
+var legsAngle = 0.0;
 
 var torsoMatrixLocal = new Matrix4().setScale(10, 10, 5);
 var shoulderMatrixRightLocal = new Matrix4().setScale(3, 5, 2);
@@ -206,13 +207,25 @@ function handleKeyPress(event)
 	var ch = getChar(event);
 	switch(ch)
 	{
+   case 'b':
+		torsoAngle += 15;
+		torsoMatrix.setTranslate(0,0,0).rotate(torsoAngle, 0, 1, 0);
+      break;
+   case 'B':
+		torsoAngle -= 15;
+		torsoMatrix.setTranslate(0,0,0).rotate(torsoAngle, 0, 1, 0);
+      break;
 	case 't':
 		torsoAngle += 15;
 		torsoMatrix.setTranslate(0,0,0).rotate(torsoAngle, 0, 1, 0);
+      legsAngle -= 15;
+      legMatrix.setTranslate(0, -11, 0).rotate(legsAngle, 0, 1,0);
 		break;
 	case 'T':
 		torsoAngle -= 15;
 		torsoMatrix.setTranslate(0,0,0).rotate(torsoAngle, 0, 1, 0);
+      legsAngle += 15;
+      legMatrix.setTranslate(0, -11, 0).rotate(legsAngle, 0, 1,0);
 		break;
 	case 's':
 		shoulderAngle += 15;
@@ -256,6 +269,14 @@ function handleKeyPress(event)
 		headAngle -= 15;
 		headMatrix.setTranslate(0, 7, 0).rotate(headAngle, 0, 1, 0);
 		break;
+   case 'p':
+      legsAngle += 15;
+      legMatrix.setTranslate(0, -11, 0).rotate(legsAngle, 0, 1,0);
+      break;
+   case 'P':
+      legsAngle -= 15;
+      legMatrix.setTranslate(0, -11, 0).rotate(legsAngle, 0, 1,0);
+      break;
 		default:
 	return;
 	}
@@ -263,7 +284,7 @@ function handleKeyPress(event)
 
 // helper function renders the cube based on the model transformation
 // on top of the stack and the given local transformation
-function renderCube(matrixStack, matrixLocal)
+function renderCube(matrixStack, matrixLocal,color)
 {
 	  // bind the shader
 	  gl.useProgram(lightingShader);
@@ -296,7 +317,16 @@ function renderCube(matrixStack, matrixLocal)
 	  loc = gl.getUniformLocation(lightingShader, "projection");
 	  gl.uniformMatrix4fv(loc, false, projection.elements);
 	  loc = gl.getUniformLocation(lightingShader, "u_Color");
-	  gl.uniform4f(loc, 0.0, 1.0, 0.0, 1.0);
+     if(color == 1){
+        gl.uniform4f(loc, 0.0, 1.0, 0.0, 1.0); //verde
+     }
+     else if(color == 2) {
+        gl.uniform4f(loc, 1.0, 0.0, 0.0, 1.0); //vermelho
+     }
+     else if(color == 3) {
+        gl.uniform4f(loc, 0.0, 0.0, 1.0, 1.0); //blue
+        }
+
 	  var loc = gl.getUniformLocation(lightingShader, "lightPosition");
 	  gl.uniform4f(loc, 5.0, 10.0, 5.0, 1.0);
     
@@ -324,52 +354,52 @@ function draw()
 	// set up the matrix stack  
 	var s = new Stack();
 	s.push(torsoMatrix);
-	renderCube(s, torsoMatrixLocal);
+	renderCube(s, torsoMatrixLocal, 2);
     
 	// shoulder relative to torso
 	s.push (new Matrix4(s.top()).multiply(shoulderMatrixRight)); 
-	renderCube(s, shoulderMatrixRightLocal);
+	renderCube(s, shoulderMatrixRightLocal, 2);
       
 	// Right arm relative to shoulder
 	s.push(new Matrix4(s.top()).multiply(armMatrixRight));
-	renderCube(s, armMatrixRightLocal);
+	renderCube(s, armMatrixRightLocal, 1);
 
 
 	// hand relative to arm
 	s.push(new Matrix4(s.top()).multiply(handMatrix));
-	renderCube(s, handMatrixLocal);
+	renderCube(s, handMatrixLocal, 1);
 	s.pop();
 	s.pop();
 	s.pop();
     
 	// left shoulder relative to torso
 	s.push (new Matrix4(s.top()).multiply(shoulderMatrixLeft)); 
-	renderCube(s, shoulderMatrixLeftLocal);
+	renderCube(s, shoulderMatrixLeftLocal, 2);
 
    //Left arm relative to shouder
 	s.push(new Matrix4(s.top()).multiply(armMatrixLeft));
-	renderCube(s, armMatrixLeftLocal);
+	renderCube(s, armMatrixLeftLocal, 1);
 
 	// left hand relative to arm
 	s.push(new Matrix4(s.top()).multiply(handMatrix));
-	renderCube(s, handMatrixLocal);
+	renderCube(s, handMatrixLocal, 1);
    s.pop();
    s.pop();
    s.pop();
 
    //leg relative to torso
    s.push(new Matrix4(s.top()).multiply(legMatrix));
-   renderCube(s, legMatrixLocal);
+   renderCube(s, legMatrixLocal, 3);
 
    //feet relative to leg
    s.push(new Matrix4(s.top()).multiply(feetMatrix));
-   renderCube(s, feetMatrixLocal);
+   renderCube(s, feetMatrixLocal, 1);
    s.pop();
    s.pop();
 
 	// head relative to torso
 	s.push(new Matrix4(s.top()).multiply(headMatrix));
-	renderCube(s, headMatrixLocal);
+	renderCube(s, headMatrixLocal, 1);
 	s.pop();
 	s.pop();
 
